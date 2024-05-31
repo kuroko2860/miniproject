@@ -13,8 +13,6 @@ import (
 	"golang.org/x/net/context"
 )
 
-var redisClient *redis.Client
-
 type Object struct {
 	ID       string `json:"id"`
 	Type     string `json:"type"`
@@ -27,13 +25,32 @@ type Object struct {
 	Dump   string `json:"dump"` // Dump data to get 10kb request data
 }
 
+var rdb *redis.Client
+var jobQueue chan Object
+var numWorkers = 10000
+
+func worker(jobs <-chan Object) {
+	for data := range jobs {
+		// Store data in Redis
+		err := storeObjectInRedis(data)
+		if err != nil {
+			fmt.Println("Error storing in Redis:", err)
+		}
+	}
+}
 func main() {
 	// Initialize Redis client
-	redisClient = redis.NewClient(&redis.Options{
+	rdb = redis.NewClient(&redis.Options{
 		Addr:     "redis:6379", // Address of the Redis container within Docker network
 		Password: "",           // No password set
 		DB:       0,            // Use default DB
 	})
+
+	// Create worker pool and job queue
+	jobQueue = make(chan Object, 10000) // Buffered channel to prevent blocking
+	for i := 0; i < numWorkers; i++ {
+		go worker(jobQueue)
+	}
 
 	// Create a new Gin router
 	router := gin.Default()
@@ -65,16 +82,12 @@ func addObject(c *gin.Context) {
 	var obj Object
 	if err := c.ShouldBindJSON(&obj); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		fmt.Println(c.Request.Body)
 		return
 	}
 
 	// Store object data in Redis asynchronously
-	go func(obj Object) {
-		err := storeObjectInRedis(obj)
-		if err != nil {
-			log.Println("Failed to store object data in Redis:", err)
-		}
-	}(obj)
+	jobQueue <- obj
 
 	// Respond immediately
 	c.JSON(http.StatusOK, gin.H{"message": "Object data is being processed"})
@@ -89,7 +102,7 @@ func storeObjectInRedis(obj Object) error {
 	}
 
 	// Push object data to Redis list
-	_, err = redisClient.RPush(context.Background(), "objects", objJSON).Result()
+	_, err = rdb.RPush(context.Background(), "objects", objJSON).Result()
 	if err != nil {
 		return err
 	}
