@@ -34,8 +34,9 @@ func main() {
 
 	// Set up fasthttp server
 	server := &fasthttp.Server{
-		Handler: requestHandler,
-		Name:    "FastHTTP Server",
+		Handler:     requestHandler,
+		Concurrency: 3000,
+		Name:        "FastHTTP Server",
 	}
 
 	// Start the server
