@@ -27,7 +27,7 @@ type Object struct {
 
 var rdb *redis.Client
 var jobQueue chan Object
-var numWorkers = 10000
+var numWorkers = 3000
 
 func worker(jobs <-chan Object) {
 	for data := range jobs {
@@ -47,7 +47,7 @@ func main() {
 	})
 
 	// Create worker pool and job queue
-	jobQueue = make(chan Object, 10000) // Buffered channel to prevent blocking
+	jobQueue = make(chan Object, 30000) // Buffered channel to prevent blocking
 	for i := 0; i < numWorkers; i++ {
 		go worker(jobQueue)
 	}

@@ -13,7 +13,7 @@ services:
 
   go-server:
     build:
-      context: ./goserver
+      context: ./fasthttp
     container_name: go-server
     environment:
       - PORT=8080
