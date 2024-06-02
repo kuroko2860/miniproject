@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"encoding/json"
+	// "encoding/json"
 	"log"
 
 	"github.com/go-redis/redis/v8"
@@ -34,13 +34,14 @@ func main() {
 
 	// Set up fasthttp server
 	server := &fasthttp.Server{
-		Handler:     requestHandler,
-		Concurrency: 3000,
-		Name:        "FastHTTP Server",
+		Handler:      requestHandler,
+		Name:         "FastHTTP Server",
+		TCPKeepalive: true,
+		Concurrency:  10000,
 	}
 
 	// Start the server
-	log.Println("Starting server on :8080...")
+	log.Println("change Starting server on :8080...")
 	if err := server.ListenAndServe(":8080"); err != nil {
 		log.Fatalf("Error starting server: %v", err)
 	}
@@ -63,26 +64,12 @@ func getHealthCheck(ctx *fasthttp.RequestCtx) {
 }
 
 func postObject(ctx *fasthttp.RequestCtx) {
-	var obj Object
-
-	// Parse JSON body
-	if err := json.Unmarshal(ctx.PostBody(), &obj); err != nil {
-		ctx.Error("Invalid request body", fasthttp.StatusBadRequest)
-		return
-	}
-
-	// Convert object to JSON
-	objJSON, err := json.Marshal(obj)
-	if err != nil {
-		ctx.Error("Failed to marshal object", fasthttp.StatusInternalServerError)
-		return
-	}
-
-	// Push object JSON to Redis list
-	if err := redisClient.RPush(context.Background(), "objects", objJSON).Err(); err != nil {
-		ctx.Error("Failed to store object in Redis", fasthttp.StatusInternalServerError)
-		return
-	}
+	// Perform the Redis operation in a separate Goroutine
+	go func(data []byte) {
+		if err := redisClient.RPush(context.Background(), "objects", data).Err(); err != nil {
+			log.Printf("Failed to store object in Redis: %v", err)
+		}
+	}(ctx.PostBody())
 
 	ctx.SetStatusCode(fasthttp.StatusOK)
 	ctx.SetBodyString("OK")

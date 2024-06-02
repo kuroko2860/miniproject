@@ -46,14 +46,16 @@ async function processBatch() {
     const records = await redis.lrange("objects", 0, batchSize - 1);
     if (records.length === 0) return; // No records to process
 
-    // Parse the records
-    const objects = records.map((record) => JSON.parse(record));
+    // Parse the records in parallel using Promise.all
+    const objects = await Promise.all(
+      records.map((record) => JSON.parse(record))
+    );
 
     // Insert the records into MongoDB
-    await ObjectModel.insertMany(objects);
+    await ObjectModel.insertMany(objects, { ordered: false });
 
     // Remove the processed records from Redis
-    redis.ltrim("objects", batchSize, -1);
+    await redis.ltrim("objects", batchSize, -1);
 
     console.log(`Processed ${objects.length} records`);
   } catch (error) {
