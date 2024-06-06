@@ -1,8 +1,11 @@
 package com.kuroko.statistic.entity;
 
 import org.locationtech.jts.geom.Point;
+
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import jakarta.persistence.*;
-import java.time.Instant;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "objects")
@@ -21,14 +24,15 @@ public class ObjectEntity {
     @Column(name = "color", nullable = false)
     private String color;
 
-    @Column(name = "location", columnDefinition = "GEOGRAPHY(POINT, 4326)", nullable = false)
+    @JsonSerialize(using = PointSerializer.class)
+    @Column(name = "location", columnDefinition = "geometry(POINT, 4326)", nullable = false)
     private Point location;
 
     @Column(name = "status", nullable = false)
     private String status;
 
-    @Column(name = "timestamp", nullable = false)
-    private Instant timestamp;
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
 
     public Long getId() {
         return id;
@@ -78,12 +82,12 @@ public class ObjectEntity {
         this.status = status;
     }
 
-    public Instant getTimestamp() {
-        return timestamp;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
-    public void setTimestamp(Instant timestamp) {
-        this.timestamp = timestamp;
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 
     // Getters and setters

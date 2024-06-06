@@ -1,16 +1,18 @@
 package com.kuroko.statistic.controller;
 
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.Polygon;
-import org.locationtech.jts.geom.Coordinate;
+import java.time.LocalDateTime;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.kuroko.statistic.entity.ObjectEntity;
 import com.kuroko.statistic.service.ObjectService;
-
-import java.time.Instant;
-import java.util.List;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -20,24 +22,16 @@ public class ObjectController {
     @Autowired
     private ObjectService objectService;
 
-    @GetMapping
-    public List<ObjectEntity> getObjects(
-            @RequestParam double[][] coordinates,
-            @RequestParam String startTime,
-            @RequestParam String endTime,
-            @RequestParam(required = false) String type,
-            @RequestParam(required = false) String color) {
-
-        GeometryFactory geometryFactory = new GeometryFactory();
-        Coordinate[] coords = new Coordinate[coordinates.length];
-        for (int i = 0; i < coordinates.length; i++) {
-            coords[i] = new Coordinate(coordinates[i][0], coordinates[i][1]);
-        }
-        Polygon polygon = geometryFactory.createPolygon(coords);
-
-        Instant start = Instant.parse(startTime);
-        Instant end = Instant.parse(endTime);
-
-        return objectService.getObjects(polygon, start, end, type, color);
+    @GetMapping("/")
+    public List<ObjectEntity> getObjectsWithinDistanceAndTimeRange(
+            @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
+            @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end,
+            @RequestParam("longitude") double longitude,
+            @RequestParam("latitude") double latitude,
+            @RequestParam("distance") double distance) {
+        List<ObjectEntity> objects = objectService
+                .getObjectsWithinDistanceAndTimeRange(start, end, longitude, latitude, distance).subList(0,
+                        10);
+        return objects;
     }
 }

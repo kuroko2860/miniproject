@@ -32,8 +32,8 @@ func main() {
 	defer conn.Close()
 	client := pb.NewObjectClient(conn)
 	var wg sync.WaitGroup
-	numRequests := 10000
-	concurrency := 100 // Adjust this based on your needs
+	numRequests := 100000
+	concurrency := 1000 // Adjust this based on your needs
 
 	startTime := time.Now()
 

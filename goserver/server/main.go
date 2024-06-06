@@ -55,54 +55,6 @@ func (s myObjectServer) CreateObject(ctx context.Context, req *object.ObjectRequ
 	}, nil
 }
 
-// func (s *myObjectServer) CreateObject(stream object.Object_CreateObjectServer) error {
-// 	currentTime := time.Now().Unix()
-// 	key := currentTime
-// 	actual, _ := cache.LoadOrStore(key, &sync.Map{})
-// 	objMap := actual.(*sync.Map)
-
-// 	// Handle incoming requests in a separate goroutine
-// 	wg.Add(1)
-// 	go func() {
-// 		defer wg.Done()
-// 		for {
-// 			req, err := stream.Recv()
-// 			if err == io.EOF {
-// 				return // Client has finished sending
-// 			}
-// 			if err != nil {
-// 				log.Printf("Receive error: %v", err)
-// 				return
-// 			}
-
-// 			req.Timestamp = &currentTime
-// 			objMap.Store(req.Id, req)
-// 		}
-// 	}()
-
-// 	// Schedule cleanup after 1 second to send to the database
-// 	time.AfterFunc(1*time.Second, func() {
-// 		if objMap, ok := cache.LoadAndDelete(key); ok {
-// 			go func() { // Process in a goroutine to avoid blocking the server
-// 				err := sendToPostGIS(objMap.(*sync.Map)) // Pass the whole list
-// 				if err != nil {
-// 					log.Printf("Error storing objects in PostGIS: %v", err)
-// 				}
-// 			}()
-// 		}
-// 	})
-
-// 	// Keep the stream open to send acknowledgments
-// 	for {
-// 		// In a real application, you'd probably want to batch these responses
-// 		err := stream.Send(&object.ObjectResponse{Ack: "Received"})
-// 		if err != nil {
-// 			return err
-// 		}
-// 		time.Sleep(100 * time.Millisecond) // Adjust the interval as needed
-// 	}
-// }
-
 func (s myObjectServer) Hello(ctx context.Context, req *object.HelloRequest) (*object.HelloResponse, error) {
 	return &object.HelloResponse{
 		Message: "Hello World!",
@@ -118,7 +70,7 @@ func sendToPostGIS(objMap *sync.Map) error {
 
 	objMap.Range(func(_, value interface{}) bool {
 		obj := value.(*object.ObjectRequest)
-		createStmt := `INSERT INTO objects (object_id, type, color, location, status, created_at) VALUES ($1, $2, $3, ST_MakePoint($4, $5), $6, $7)`
+		createStmt := `INSERT INTO objects (object_id, type, color, location, status, created_at) VALUES ($1, $2, $3, ST_SetSRID(ST_MakePoint($4, $5),4326), $6, $7)`
 		_, err = tx.Exec(createStmt, obj.Id, obj.Type, obj.Color, obj.Lat, obj.Lng, obj.Status, time.Unix(*obj.Timestamp, 0))
 
 		return err == nil // Stop iteration on error else continue

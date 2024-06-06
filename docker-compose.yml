@@ -21,14 +21,6 @@ services:
       - ./postgres/data:/var/lib/postgresql/data
       - .postgres/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
 
-  mongodb:
-    image: mongo:latest
-    container_name: mongodb
-    volumes:
-      - ./mongodb/data:/data/db
-    ports:
-      - "27017:27017"
-
   redis:
     image: redis:latest
     container_name: redis
@@ -40,19 +32,6 @@ services:
       - "8080:8080"
     depends_on:
       - redis
-
-  worker:
-    build:
-      context: ./worker
-      dockerfile: Dockerfile
-    container_name: worker
-    environment:
-      - MONGO_URI=mongodb://mongodb:27017/miniproject
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-    depends_on:
-      - redis
-      - mongodb
  
 networks:
   default:

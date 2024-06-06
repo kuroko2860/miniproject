@@ -1,65 +1,68 @@
-// src/components/MapComponent.js
+import { useState, useEffect } from "react";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import "leaflet/dist/leaflet.css"; // Import Leaflet CSS
+import "../index.css";
 
-import { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Polygon, Marker, Popup } from "react-leaflet";
-import axios from "axios";
-import "leaflet/dist/leaflet.css";
-
-const Map = () => {
+function Map() {
   const [objects, setObjects] = useState([]);
-  const [polygon, setPolygon] = useState([
-    [51.505, -0.09],
-    [51.51, -0.1],
-    [51.51, -0.12],
-  ]); // Example coordinates
-  setPolygon([
-    [51.505, -0.09],
-    [51.51, -0.1],
-    [51.51, -0.12],
-  ]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const position = [21.0278, 105.8342];
+
   useEffect(() => {
-    const fetchData = async () => {
-      const response = await axios.get("http://localhost:9090/api/objects", {
-        params: {
-          coordinates: polygon.map(([lat, lng]) => [lng, lat]), // Reverse to match Leaflet's [lng, lat] format
-          startTime: "2024-06-01T00:00:00Z",
-          endTime: "2024-06-15T00:00:00Z",
-        },
-      });
-      setObjects(response.data);
+    const fetchObjects = async () => {
+      try {
+        const response = await fetch(
+          "http://localhost:9090/api/objects/?start=2024-06-06T00:00:00&end=2024-06-07T00:00:00&longitude=105.8342&latitude=21.0278&distance=175"
+        );
+        if (!response.ok) {
+          throw new Error("Network response was not ok.");
+        }
+        const data = await response.json();
+        setObjects(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
-    fetchData();
-  }, [polygon]);
+    fetchObjects();
+  }, []);
 
   return (
-    <MapContainer
-      center={[51.505, -0.09]}
-      zoom={13}
-      style={{ height: "100vh", width: "100%" }}
-    >
-      <TileLayer
-        url="https://tile.openstreetmap.org/13/555/123.png"
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-      />
-      <Polygon positions={polygon} />
-      {objects.map((obj) => (
-        <Marker
-          key={obj.id}
-          position={[obj.location.coordinates[1], obj.location.coordinates[0]]}
-        >
-          <Popup>
-            <div>
-              <p>Type: {obj.type}</p>
-              <p>Color: {obj.color}</p>
-              <p>Status: {obj.status}</p>
-              <p>Timestamp: {new Date(obj.timestamp).toLocaleString()}</p>
-            </div>
-          </Popup>
-        </Marker>
-      ))}
-    </MapContainer>
+    <div className="map">
+      {isLoading ? (
+        <p>Loading...</p>
+      ) : error ? (
+        <p>Error: {error}</p>
+      ) : (
+        <MapContainer center={position} zoom={13}>
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+          {objects.map((object) => (
+            <Marker
+              key={object.id + object.createdAt}
+              position={[object.location.latitude, object.location.longitude]} // Leaflet expects [lat, lng]
+            >
+              <Popup>
+                <b>ID:</b> {object.id}
+                <br />
+                <b>Type:</b> {object.type}
+                <br />
+                <b>Color:</b> {object.color}
+                <br />
+                <b>Status:</b> {object.status}
+              </Popup>
+            </Marker>
+          ))}
+        </MapContainer>
+      )}
+    </div>
   );
-};
+}
 
 export default Map;
