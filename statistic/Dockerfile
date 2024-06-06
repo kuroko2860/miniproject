@@ -1,5 +1,5 @@
 # Stage 1: Build the application
-FROM eclipse-temurin:18-jre-alpine AS build
+FROM maven:3.8.6-openjdk-18 AS build
 
 # Set the working directory inside the container
 WORKDIR /app
