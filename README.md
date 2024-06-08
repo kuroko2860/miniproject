@@ -7,7 +7,7 @@ Miniproject VDT2024: Web app with high performence, process large data for stati
 - Statistic: Spring boot api to analytics large data.
 - Postgresql/PostGIS: Database to store object, support geometry query.  
 
-* How to run:
+## How to run
 
-* How to simulate large number of request (10k - 100k req/s) to our server:
+### How to simulate large number of request (10k - 100k req/s) to our server
 

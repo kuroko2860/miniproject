@@ -9,7 +9,7 @@ message ObjectRequest {
   float lat = 4;
   float lng = 5;
   string status = 6;
-  optional int64 timestamp = 7;
+  int64 timestamp = 7;
 }
 
 message ObjectResponse {

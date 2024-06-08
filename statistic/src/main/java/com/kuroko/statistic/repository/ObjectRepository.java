@@ -20,4 +20,13 @@ public interface ObjectRepository extends JpaRepository<ObjectEntity, Long> {
             @Param("longitude") double longitude,
             @Param("latitude") double latitude,
             @Param("distance") double distance);
+
+    @Query(value = "SELECT COUNT(*) FROM objects " +
+            "WHERE created_at >= :start AND created_at < :end " +
+            "AND ST_Contains(ST_GeomFromText(:polygon, 4326), location)", nativeQuery = true)
+    Long countObjectsWithinPolygonAndTimeRange(
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end,
+            @Param("polygon") String polygonWKT // Pass polygon as WKT string
+    );
 }

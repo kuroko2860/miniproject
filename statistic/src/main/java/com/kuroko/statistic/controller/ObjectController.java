@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,5 +34,15 @@ public class ObjectController {
                 .getObjectsWithinDistanceAndTimeRange(start, end, longitude, latitude, distance).subList(0,
                         10);
         return objects;
+    }
+
+    @GetMapping("/count") // Use a new endpoint for the count query
+    public ResponseEntity<Long> countObjectsWithinPolygonAndTimeRange(
+            @RequestParam("start") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
+            @RequestParam("end") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end,
+            @RequestParam("polygon") String polygonWKT // Get polygon as WKT
+    ) {
+        Long count = objectService.countObjectsWithinPolygonAndTimeRange(start, end, polygonWKT);
+        return ResponseEntity.ok(count);
     }
 }

@@ -16,7 +16,6 @@ import (
 )
 
 var (
-	// ... other global variables ...
 	db    *sql.DB       // Global database connection
 	cache = &sync.Map{} // Map to store objects with timestamps
 )
@@ -26,18 +25,12 @@ type myObjectServer struct {
 }
 
 func (s myObjectServer) CreateObject(ctx context.Context, req *object.ObjectRequest) (*object.ObjectResponse, error) {
-	currentTime := time.Now().Unix()
-	// record++
-	// fmt.Println(record)
-	req.Timestamp = &currentTime
-
 	// Get or create the object list for this timestamp in the cache
-	key := currentTime
+	key := req.Timestamp
 	actual, _ := cache.LoadOrStore(key, &sync.Map{})
 	objMap := actual.(*sync.Map)
-	// fmt.Println(req.Id)
 	objMap.Store(req.Id, req)
-	// Schedule cleanup after 1 second to send to the database
+	// Schedule cleanup after 1 second to send to the database, not blocking the go routine
 	time.AfterFunc(1*time.Second, func() {
 		if objMap, ok := cache.LoadAndDelete(key); ok {
 			go func() { // Process in a goroutine to avoid blocking the server
@@ -55,12 +48,6 @@ func (s myObjectServer) CreateObject(ctx context.Context, req *object.ObjectRequ
 	}, nil
 }
 
-func (s myObjectServer) Hello(ctx context.Context, req *object.HelloRequest) (*object.HelloResponse, error) {
-	return &object.HelloResponse{
-		Message: "Hello World!",
-	}, nil
-}
-
 func sendToPostGIS(objMap *sync.Map) error {
 	tx, err := db.BeginTx(context.Background(), nil) // Use a transaction
 	if err != nil {
@@ -71,7 +58,7 @@ func sendToPostGIS(objMap *sync.Map) error {
 	objMap.Range(func(_, value interface{}) bool {
 		obj := value.(*object.ObjectRequest)
 		createStmt := `INSERT INTO objects (object_id, type, color, location, status, created_at) VALUES ($1, $2, $3, ST_SetSRID(ST_MakePoint($4, $5),4326), $6, $7)`
-		_, err = tx.Exec(createStmt, obj.Id, obj.Type, obj.Color, obj.Lat, obj.Lng, obj.Status, time.Unix(*obj.Timestamp, 0))
+		_, err = tx.Exec(createStmt, obj.Id, obj.Type, obj.Color, obj.Lat, obj.Lng, obj.Status, time.Unix(obj.Timestamp, 0))
 
 		return err == nil // Stop iteration on error else continue
 	})
@@ -79,62 +66,18 @@ func sendToPostGIS(objMap *sync.Map) error {
 	return tx.Commit() // Commit the transaction if everything is successful
 }
 
-// func gen_data() {
-// 	const numObjects = 10000
-// 	const maxID = 100000
-// 	types := []string{"car", "bike", "truck", "bus"}
-// 	colors := []string{"red", "green", "blue", "yellow"}
-// 	statuses := []string{"moving", "static"}
-
-// 	// Starting coordinates
-// 	lat := rand.Float32()*180 - 90
-// 	lng := rand.Float32()*360 - 180
-
-// 	// Open the file in write mode (create if not exists)
-// 	file, err := os.Create("../test/object_requests.bin")
-// 	if err != nil {
-// 		log.Fatalf("failed to open file: %v", err)
-// 	}
-// 	defer file.Close()
-
-// 	for i := 0; i < numObjects; i++ {
-// 		objectReq := &object.ObjectRequest{
-// 			Id:     fmt.Sprintf("%d", rand.Intn(maxID)+1),
-// 			Type:   types[rand.Intn(len(types))],
-// 			Color:  colors[rand.Intn(len(colors))],
-// 			Lat:    lat,
-// 			Lng:    lng,
-// 			Status: statuses[rand.Intn(len(statuses))],
-// 		}
-
-// 		// Increment lat/lng slightly for each object
-// 		lat += rand.Float32() * 0.001
-// 		lng += rand.Float32() * 0.001
-
-// 		// Serialize the object
-// 		data, err := proto.Marshal(objectReq)
-// 		if err != nil {
-// 			log.Fatalf("marshaling error: %v", err)
-// 		}
-// 		buf := make([]byte, 4)
-// 		binary.LittleEndian.PutUint32(buf, uint32(len(data)))
-
-// 		if _, err := file.Write(buf); err != nil {
-// 			log.Fatalf("failed to write message size: %v", err)
-// 		}
-// 		if _, err := file.Write(data); err != nil {
-// 			log.Fatalf("failed to write message data: %v", err)
-// 		}
-// 	}
-// 	fmt.Println("Binary data written to object_requests.bin")
-// }
+func (s myObjectServer) Hello(ctx context.Context, req *object.HelloRequest) (*object.HelloResponse, error) {
+	return &object.HelloResponse{
+		Message: "Hello World!",
+	}, nil
+}
 
 func main() {
-	// gen_data()
 	// db connect
 	var err error
 	dbConnString := "postgres://postgres:2862003(())aa@localhost:5432/miniproject?sslmode=disable"
 	db, err = sql.Open("postgres", dbConnString)
+	db.SetMaxOpenConns(50)
 	if err != nil {
 		panic(err)
 	}

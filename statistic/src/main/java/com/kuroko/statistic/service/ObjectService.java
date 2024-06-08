@@ -23,4 +23,8 @@ public class ObjectService {
             double distance) {
         return objectRepository.findObjectsWithinDistanceAndTimeRange(start, end, longitude, latitude, distance);
     }
+
+    public Long countObjectsWithinPolygonAndTimeRange(LocalDateTime start, LocalDateTime end, String polygonWKT) {
+        return objectRepository.countObjectsWithinPolygonAndTimeRange(start, end, polygonWKT);
+    }
 }
