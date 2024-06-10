@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	"os"
+	"runtime/pprof"
 	"sync"
 	"time"
 
@@ -74,37 +76,32 @@ func testCreateObject() {
 	client := pb.NewObjectClient(conn)
 	var wg sync.WaitGroup
 	numRequests := 100000
-	// concurrency := 100000 // Adjust this based on your needs
-	loop := 1
-	requestPerLoop := numRequests / loop
+	concurrency := 8000 // Adjust this based on your needs
 
 	startTime := time.Now()
-	for t := 0; t < loop; t++ {
-		for i := 0; i < requestPerLoop; i++ {
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
-				objectReq := &pb.ObjectRequest{
-					Id:        fmt.Sprintf("%d", rand.Intn(maxID)+1),
-					Type:      types[rand.Intn(l_types)],
-					Color:     colors[rand.Intn(l_colors)],
-					Lat:       lat,
-					Lng:       lng,
-					Status:    statuses[rand.Intn(l_statuses)],
-					Timestamp: time.Now().Unix(),
-				}
-				// Increment lat/lng slightly for each object
-				lat += rand.Float32() * 0.01
-				lng += rand.Float32() * 0.01
-				_, err := client.CreateObject(context.Background(), objectReq)
-				if err != nil {
-					log.Printf("Could not create object: %v", err)
-				}
-			}()
-
-			// if i > 0 && i%concurrency == 0 {
-			// 	wg.Wait() // Wait for a batch of goroutines to finish
-			// }
+	for i := 0; i < numRequests; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			objectReq := &pb.ObjectRequest{
+				Id:        fmt.Sprintf("%d", rand.Intn(maxID)+1),
+				Type:      types[rand.Intn(l_types)],
+				Color:     colors[rand.Intn(l_colors)],
+				Lat:       lat,
+				Lng:       lng,
+				Status:    statuses[rand.Intn(l_statuses)],
+				Timestamp: time.Now().Unix(),
+			}
+			// Increment lat/lng slightly for each object
+			lat += rand.Float32() * 0.01
+			lng += rand.Float32() * 0.01
+			_, err := client.CreateObject(context.Background(), objectReq)
+			if err != nil {
+				log.Printf("Could not create object: %v", err)
+			}
+		}()
+		if i > 0 && i%concurrency == 0 {
+			wg.Wait() // Wait for a batch of goroutines to finish
 		}
 	}
 	wg.Wait() // Wait for all remaining goroutines
@@ -122,6 +119,22 @@ func testCreateObject() {
 }
 
 func main() {
+	f, err := os.Create("cpu_profile.prof")
+
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+
+	err = pprof.StartCPUProfile(f)
+
+	if err != nil {
+		panic(err)
+	}
+
+	defer pprof.StopCPUProfile()
 	// testHello()
+
 	testCreateObject()
+
 }

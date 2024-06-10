@@ -10,6 +10,9 @@ import (
 	"sync"
 	"time"
 
+	"net/http"
+	_ "net/http/pprof"
+
 	_ "github.com/lib/pq"
 	"google.golang.org/grpc"
 	object "kuroko.com/goserver/object"
@@ -33,10 +36,10 @@ func (s myObjectServer) CreateObject(ctx context.Context, req *object.ObjectRequ
 	// Schedule cleanup after 1 second to send to the database, not blocking the go routine
 	time.AfterFunc(1*time.Second, func() {
 		if objMap, ok := cache.LoadAndDelete(key); ok {
-			go func() { // Process in a goroutine to avoid blocking the server
+			func() { // Process in a goroutine to avoid blocking the server
 				err := sendToPostGIS(objMap.(*sync.Map)) // Pass the whole list
 				if err != nil {
-					log.Printf("Error storing objects in PostGIS: %v", err)
+					log.Fatal("Error storing objects in PostGIS:", err)
 					// You might want to handle the error more robustly here (e.g., retry)
 				}
 			}()
@@ -51,14 +54,20 @@ func (s myObjectServer) CreateObject(ctx context.Context, req *object.ObjectRequ
 func sendToPostGIS(objMap *sync.Map) error {
 	tx, err := db.BeginTx(context.Background(), nil) // Use a transaction
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
 	defer tx.Rollback() // Ensure rollback on error
-
-	objMap.Range(func(_, value interface{}) bool {
+	stmt, err := tx.Prepare("INSERT INTO objects (object_id, type, color, location, status, created_at) VALUES ($1, $2, $3, ST_SetSRID(ST_MakePoint($4, $5),4326), $6, $7)")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer stmt.Close()
+	objMap.Range(func(_, value any) bool {
 		obj := value.(*object.ObjectRequest)
-		createStmt := `INSERT INTO objects (object_id, type, color, location, status, created_at) VALUES ($1, $2, $3, ST_SetSRID(ST_MakePoint($4, $5),4326), $6, $7)`
-		_, err = tx.Exec(createStmt, obj.Id, obj.Type, obj.Color, obj.Lat, obj.Lng, obj.Status, time.Unix(obj.Timestamp, 0))
+
+		if _, err = stmt.Exec(obj.Id, obj.Type, obj.Color, obj.Lat, obj.Lng, obj.Status, time.Unix(obj.Timestamp, 0)); err != nil {
+			log.Fatal(err)
+		}
 
 		return err == nil // Stop iteration on error else continue
 	})
@@ -73,17 +82,20 @@ func (s myObjectServer) Hello(ctx context.Context, req *object.HelloRequest) (*o
 }
 
 func main() {
-	// db connect
 	var err error
+	go func() {
+		http.ListenAndServe(":10001", nil)
+	}()
+	// db connect
 	dbConnString := "postgres://postgres:2862003(())aa@localhost:5432/miniproject?sslmode=disable"
 	db, err = sql.Open("postgres", dbConnString)
 	db.SetMaxOpenConns(50)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	if err = db.Ping(); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	fmt.Println("The database is connected")
 	defer db.Close()
@@ -91,13 +103,13 @@ func main() {
 	// create server
 	lis, err := net.Listen("tcp", ":8089")
 	if err != nil {
-		log.Fatalf("cannot create listener: %s", err)
+		log.Fatal("cannot create listener:", err)
 	}
 	serverRegistrar := grpc.NewServer()
 	service := &myObjectServer{}
 	object.RegisterObjectServer(serverRegistrar, service)
 	err = serverRegistrar.Serve(lis)
 	if err != nil {
-		log.Fatalf("impossible to serve: %s", err)
+		log.Fatal("impossible to serve:", err)
 	}
 }
