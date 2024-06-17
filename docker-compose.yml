@@ -1,13 +1,6 @@
 version: '3.8'
 
 services:
-  spring-server:
-    build:
-      context: ./statistic
-    ports:
-      - "9090:9090"
-    depends_on:
-      - postgres
   postgres:
     image: postgis/postgis:16-3.4
     container_name: postgres
@@ -21,13 +14,10 @@ services:
       - ./postgres/data:/var/lib/postgresql/data
       - .postgres/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
 
-  redis:
-    image: redis:latest
-    container_name: redis
-
+  
   go-server:
     build:
-      context: ./fasthttp
+      context: ./goserver
     ports:
       - "8080:8080"
     depends_on:

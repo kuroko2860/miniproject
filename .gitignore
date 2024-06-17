@@ -2,3 +2,5 @@ mongodb/data/**
 postgres/data/**
 node_modules
 .vscode/
+*.exe
+*.log

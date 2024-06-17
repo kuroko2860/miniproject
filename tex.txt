@@ -1,0 +1,435 @@
+\documentclass[12pt,a4paper,twoside]{report}
+\usepackage[a4paper,top=2cm,bottom=2cm,,right=1.5cm,left=1.5cm]{geometry}
+\usepackage[utf8]{vietnam}
+\usepackage{hyperref}
+\hypersetup{
+	colorlinks=true,
+	linkcolor=black, % Set link color to black
+	urlcolor=black, % Set URL color to black
+	citecolor=black % Set citation color to black
+}
+\usepackage{amsmath,amsxtra,amssymb,enumerate,multicol,tikz,tkz-tab,array,wrapfig,graphicx,color,caption}
+\definecolor{gray accent 5}{rgb}{.840, .840, .840}
+\everymath{\displaystyle}
+\usetikzlibrary{calc}
+\usepackage{natbib}
+\usepackage{listings}
+\usepackage{xcolor} % Gói để tùy chỉnh màu sắc
+
+\definecolor{lightgray}{gray}{0.9} % Định nghĩa màu xám nhạt
+
+\lstset{ % Cấu hình cho môi trường lstlisting
+    backgroundcolor=\color{lightgray},   % Đặt nền màu xám nhạt
+    basicstyle=\ttfamily,              % Sử dụng font monospace
+    breaklines=true,                   % Cho phép ngắt dòng
+    captionpos=b,                      % Đặt caption ở dưới
+    frame=none,                       % Vẽ khung xung quanh code
+    numbers=none,                      % Hiển thị số dòng ở bên trái
+    numberstyle=\tiny\color{gray},     % Kiểu số dòng nhỏ màu xám
+    showspaces=false,                  % Không hiển thị khoảng trắng
+    showstringspaces=false,             % Không hiển thị khoảng trắng trong chuỗi
+    showtabs=false,                    % Không hiển thị tab
+    tabsize=2                         % Kích thước của một tab là 2 khoảng trắng
+}
+
+\begin{document}
+	\begin{titlepage}
+		\begin{tikzpicture}[overlay,remember picture]
+			
+			\draw[line width=3pt]
+			($(current page.north west)+ (2.0cm, -2.0cm)$) 
+			rectangle
+			($(current page.south east)+(-2.0cm, 2.5cm)$);
+			\draw[line width=0.5pt]
+			($(current page.north west)+ (2.1cm, -2.1cm)$) 
+			rectangle
+			($(current page.south east)+(-2.1cm, 2.6cm)$);
+		\end{tikzpicture}
+		\begin{center}
+			\textbf{\fontsize{15pt}{0pt}\selectfont TRƯỜNG ĐẠI HỌC CÔNG NGHỆ}\\
+			\textbf{\fontsize{18pt}{0pt}\selectfont KHOA CÔNG NGHỆ THÔNG TIN}
+			\vspace{0.5cm}
+			\begin{figure}[h]
+				\centering
+				\includegraphics[width=7cm]{uet.png}
+				
+			\end{figure}
+			\vspace{0.5cm}
+			
+			\fontsize{16pt}{17pt}\selectfont 
+			\textbf{BÁO CÁO} 
+			
+			\vspace{7pt}
+			\textbf{VDT2024 MINIPROJECT}
+			
+			\vspace{1cm}
+			
+			
+			\fontsize{14pt}{17pt}\selectfont  
+			\hspace{1em}
+			\textbf{\textsl{\underline{ĐỀ TÀI:}}}
+			
+			\fontsize{16pt}{17pt}\selectfont 
+			\textbf{\textrm{XÂY DỰNG ỨNG DỤNG HIỆU NĂNG CAO}}
+			
+			\vspace{1.5cm}
+			\begin{tabular}{l l l}
+				\fontsize{14pt}{0pt}\selectfont Mentor&:   & \fontsize{14pt}{0pt}\selectfont Uông Huy Quân \vspace{6pt}\\ 	
+				\fontsize{14pt}{0pt}\selectfont Người thực hiện:&:   & \fontsize{14pt}{0pt}\selectfont Lê Văn Quốc \vspace{6pt}\\ 
+				
+				% \fontsize{14pt}{0pt}\selectfont  Mã sinh viên&:  & \fontsize{14pt}{0pt}\selectfont 21020385 \vspace{6pt}\\
+				% \fontsize{14pt}{0pt}\selectfont Mã môn học&:   & \fontsize{14pt}{0pt}\selectfont INT3507 2 \vspace{6pt}\\	
+				% \fontsize{14pt}{0pt}\selectfont Khoa&:&  \fontsize{14pt}{0pt}\selectfont Công nghệ thông tin \vspace{6pt}\\ 
+			\end{tabular}
+			
+			\vspace{1cm}
+			
+			\begin{center}
+				\textbf{\textit{Hà Nội, tháng 6 năm 2024}}
+			\end{center}
+		\end{center}
+		
+	\end{titlepage}
+	\tableofcontents{}
+	
+	\newpage
+	\chapter*{ĐẶT VẤN ĐỀ}
+        Hiện nay, mật độ giao thông Việt Nam đang ngày càng tăng và trở thành một vấn đề đáng quan tâm, đặc biệt đối với các thành phố lớn đông dân cư. Việc ứng dụng giao thông thông minh (Intelligent Transport Systems – ITS) như một giải pháp tất yếu đối với vấn đề này. Ứng dụng ITS yêu cầu một hệ thống mạnh mẽ có thể thu thập và xử lý một lượng lớn dữ liệu về phương tiện, con người. Tuy nhiên, quy mô lớn của loại dữ liệu này đặt ra những thách thức đáng kể đối với các hệ thống lưu trữ, xử lý dữ liệu truyền thống.\\
+        Một vài thách thức có thể kể tới như:
+        \begin{itemize}
+            \item \textbf{Hiệu suất cao:} Dữ liệu đến từ hàng ngàn thiết bị IOT, cảm biến, camera,... một cách liên tục có thể dễ dàng áp đảo hệ thống xử lý nếu không thiết kế tốt. Điều này dẫn đến việc bỏ sót thông tin, xử lý chậm và cuối cùng là mất đi những tri thức có giá trị.
+            \item \textbf{Dữ liệu thừa:} Các nguồn dữ liệu thường gửi các bản cập nhật cho cùng một đối tượng trong khoảng thời gian ngắn. Việc loại bỏ các dữ liệu nhiễu, kém giá trị một cách hiệu quả trong khi vẫn duy trì độ chính xác là điều cần thiết để tránh chi phí lưu trữ và xử lý không cần thiết.
+            \item \textbf{Lượng dữ liệu lớn:} Lượng dữ liệu tăng rất nhanh theo thời gian sẽ là vấn đề lớn cho việc lưu trữ và phân tích thống kê. Cần thiết kế cơ sở dữ liệu và truy vấn hiệu quả để đáp ứng được độ trễ mong muốn. 
+        \end{itemize}\\
+        Mục tiêu chính của dự án này là thiết kế và triển khai một hệ thống mạnh mẽ có khả năng thu thập và phân tích thống kê lượng lớn dữ liệu không gian địa lý theo thời gian đồng thời giải quyết các thách thức nêu trên. Dự án tạo nền tảng để xây dựng các ứng dụng tiếp theo có thể khai thác sức mạnh của dữ liệu không gian địa lý theo thời gian thực để cung cấp những hiểu biết có giá trị và cải thiện phần nào vấn đề giao thông Việt Nam hiện nay.
+	   
+	\chapter{PHÂN TÍCH VẤN ĐỀ}
+	\section{Phân tích dữ liệu }
+	\subsection{Nguồn dữ liệu}
+        Hệ thống sẽ nhận dữ liệu cập nhật đối tượng từ nhiều nguồn khác nhau, bao gồm:
+        \begin{itemize}
+        \item Thiết bị GPS gắn trên xe.
+        \item Cảm biến IoT được triển khai trong nhiều môi trường khác nhau.
+        \item Ứng dụng di động báo cáo vị trí của người dùng.
+        \item Các nguồn dữ liệu không gian địa lý khác (ví dụ: trạm thời tiết, camera giao thông).
+        \end{itemize}
+        \subsection{Đặc điểm dữ liệu}
+        \begin{itemize}
+            \item \textbf{Cấu trúc:} Dữ liệu đối tượng sẽ bao gồm: \\
+            - Định danh đối tượng, mỗi đối tượng có 1 định danh duy nhất và khác nhau. \\
+            - Thuộc tính bổ sung như loại, màu sắc, trạng thái,... \\
+            - Thông tin vị trí địa lý: Kinh độ, vĩ độ. \\
+            - Mốc thời gian (timestamp) cho mỗi bản ghi.
+            \item \textbf{Cập nhật thường xuyên:} Các đối tượng có thể được cập nhật thông tin theo các khoảng thời gian khác nhau, từ vài giây đến vài phút hoặc thậm chí hàng giờ.
+            \item \textbf{Không giới hạn:} Dữ liệu được cập nhật bằng cách thêm mới, không sửa hay xóa dữ liệu cũ để phục vụ truy vấn thống kê với thời gian trong quá khứ. Do đó dữ liệu quá khứ sẽ luôn giữ giữ nguyên, tuy nhiên lượng dữ liệu luôn tăng dần theo thời gian, thậm chí là tăng nhanh, . 
+            \item \textbf{Dữ liệu nhiễu:} Thông tin của cùng một đối tượng được cấp nhật liên tục có thể là nhiễu, ví dụ như đối tượng được cập nhật 100 lần trong 1 giây. Việc lưu dữ liệu nhiễu sẽ gây tốn chi phí mà không mang lại giá trị cao.
+        \end{itemize}
+	\newpage
+        
+	\section{Phân tích yêu cầu}
+        Yêu cầu sản phẩm là xây dựng một hệ thống giám sát các đối tượng giao thông với hiệu năng cao, cung cấp chức năng phân tích dữ liệu phục vụ cho việc thống kê sô lượng theo thời gian hoặc khu vực, cùng với đó là phầm mềm giả lập lượng yêu cầu đồng thời lớn tới hệ thống trên.
+        
+        \subsection{Yêu cầu chức năng}
+        \begin{itemize}
+            \item Hệ thống cho phép cập nhật thông tin về đối tượng (loại, màu sắc, vị trí,...)
+            \item Hệ thống thống kê được số lượng đối tượng xuất hiện theo các tiêu chí chính như khu vực, thời gian, cùng tiêu chí phụ (không bắt buộc) như loại, màu sắc,...
+        \end{itemize}
+        \subsection{Yêu cầu phi chức năng}
+        \begin{itemize}
+            \item Hệ thống xử lý được lượng yêu cầu lớn, từ 10.000 đến 100.000 requests/giây
+            \item Thời gian truy vấn thống kê < 30 giây
+        \end{itemize}
+	\newpage
+
+        \section{Phân tích hệ thống}
+        Từ yêu cầu nêu trên, ta chia hệ thống thành 2 services chính: Service thu thập dữ liệu và service truy vấn thống kê:
+        \begin{itemize}
+            \item \textbf{Service thu thập dữ liệu:} Nhận request chứa object data từ phía client, xử lý và lưu trữ data.
+            \item \textbf{Service truy vấn thống kê:} Đưa ra số lượng xe nằm trong khu vực và khoảng thời gian cho trước, có thể lọc theo màu sắc, loại,... (không bắt buộc).
+        \end{itemize}
+        
+        \begin{figure}[h]
+				\centering
+				\includegraphics[width=14cm]{images/hinh1.png}
+				\caption{Kiến trúc tổng quan của hệ thống}
+	\end{figure}
+
+        \subsection{Service thu thập dữ liệu}
+        Service thu thập dữ liệu cần đáp ứng được lượng request đồng thời từ nhiều nguồn khác nhau. Tuy nhiên ở trong phạm vi bài toán này, ta sẽ tạo ra một phần mềm giả lập request, gửi 10.000 đến 100.000 requests/giây tới service trên. 
+        \begin{figure}[h]
+				\centering
+				\includegraphics[width=14cm]{images/hinh5.png}
+				\caption{Sơ đồ truyền dữ liệu}
+	\end{figure} \\
+        Với mỗi request, service sẽ extract và xử lý dữ liệu, và có cơ chế xác định loại bỏ hay giữ lại để lưu vào database.\\
+        Ta xem xét một số lưu ý cho service như sau:
+        \begin{itemize}
+            \item Cách thức xử lý request (đồng bộ, bất đồng bộ)
+            \item Phương thức giao tiếp giữa client/server (Rest, gRPC,...)
+            \item Dạng dữ liệu được truyền đi (text, JSON, binary,...)
+            \item Vấn đề encode/decode dữ liệu
+            \item Cách thức công cụ giả lập tạo và gửi request
+        \end{itemize}
+
+        \subsection{Service truy vấn thống kê}
+        Giả sử ta có các bản ghi chứa thông tin đối tượng gồm các fields:
+        \begin{itemize}
+            \item object\_id: Lưu id duy nhất của đối tượng.
+            \item timestamp: thời điểm dữ liệu được sinh ra.
+            \item location: vị trí địa lý của đối tượng, đại diện bởi một điểm trên bản đồ
+        \end{itemize}\\
+        Khi nguời dùng chọn 16-18h hôm nay và khu vực Cầu Giấy, service cần trả về số lượng đối tượng phân biệt xuất hiện ở Cầu Giấy lúc 16-18h hôm nay.\\
+        Việc lọc ra số lượng đối tượng phân biệt có thể sử dụng câu lệnh SQL: 
+        \begin{lstlisting}[language=sql]
+        SELECT COUNT(DISTINCE object_id) 
+        FROM object_table 
+        WHERE timestamp IN (16h, 18h) 
+        AND location IN Cau Giay
+        \end{lstlisting}
+        
+        \subsection{Cơ sở dữ liệu}
+        \begin{figure}[h]
+				\centering
+				\includegraphics[width=8cm]{images/hinh2.png}
+				\caption{Data model}
+	\end{figure} \\
+        Cơ sở dữ liệu là nơi lưu trữ toàn bộ dữ liệu của hệ thống. Việc lựa chọn cơ sở dữ liệu (SQL, NoSQL) cùng cách lưu trữ, tối ưu truy vấn đóng vai trò vô cùng quan trọng để đảm bảo hiệu suất cho cơ sở dữ liệu. 
+        Các tiêu chí khi lựa chọn cơ sở dữ liệu:
+        \begin{itemize}
+            \item Hiệu năng cao, xử lý được lượng ghi đồng thời lớn
+            \item Hỗ trợ ACID, đảm bảo tính toàn vẹn và chính xác của dữ liệu
+            \item Hỗ trợ dạng dữ liệu liên quan tới không gian địa lý
+            \item Hỗ trợ truy vấn theo khoảng thời gian
+        \end{itemize}
+	
+	\chapter{CÔNG NGHỆ SỬ DỤNG}
+	\section{gRPC}
+        Ban đầu, việc truyền dữ liệu từ phần mềm giả lập tới service sử dụng REST API, tuy nhiên với sô lượng request lớn, REST trở nên kém hiệu quả do overhead của việc encode/decode data lên CPU quá lớn. Thay vào đó ta sẽ sử dụng gRPC để giải quyết vấn đề này. \\
+        Một vài thông tin về gRPC:
+        \begin{itemize}
+            \item gRPC là một framework RPC mã nguồn mở, hiện đại và hiệu năng cao mà có thể chạy trên bất kỳ môi trường nào.
+            \item gRPC sử dụng HTTP/2, tối ưu các connection, đảm bảo dữ liệu trao đổi liên tục với ít băng thông nhất có thể.
+            \item Sử dụng protobuf - một dạng binary data để 2 service hiểu được message của nhau mà ít phải encode/decode.
+        \end{itemize}
+        \begin{figure}[h]
+				\centering
+				\includegraphics[width=14cm]{images/hinh9.png}
+				\caption{Kiến trúc của gRPC}
+    \end{figure}
+
+    \begin{figure}[h]
+				\centering
+				\includegraphics[width=14cm]{images/hinh10.png}
+				\caption{So sánh tốc độ encode/decode}
+    \end{figure}
+
+
+    \section{Golang}
+
+        Kết hợp với gRPC, ta sẽ sử dụng Golang làm ngôn ngữ chính cho hệ thống. Golang là ngôn ngữ lập trình hiệu năng cao, hỗ trợ xử lý đa nhân. Đặc biệt, Golang sử dụng Goroutine - một lightweight execution thread - giúp hỗ trợ lập trình concurrency đơn giản.\\
+        Các đặc điểm của Goroutine:
+        \begin{itemize}
+            \item Goroutine có kích thước rất nhỏ, khoảng 2KB memory stack.
+            \item Goroutine khởi động nhanh, tăng giảm bộ nhớ linh động.
+            \item Một golang service có thể có hàng trăm nghìn goroutine, được quản lý bởi goruntime thay vì OS.
+        \end{itemize}
+        \begin{figure}[h]
+				\centering
+				\includegraphics[width=12cm]{images/hinh13.png}
+				\caption{Mô hình hoạt động của Go runtime scheduler}
+    \end{figure}\\
+    \newpage
+    \noindent \textbf{Goruntime Scheduler}\\
+    \indent Go runtime scheduler chịu trách nhiệm quản lý và lên lịch thực thi cho các goroutines. Nó sử dụng một mô hình M:N, trong đó M goroutines được ánh xạ tới N threads của hệ điều hành.\\
+        
+       \noindent \textbf{Cách hoạt động của Go runtime scheduler:}
+\begin{enumerate}
+    \item \textbf{Global Run Queue:} Tất cả các goroutines sẵn sàng để chạy được đặt vào một hàng đợi chung (global run queue).
+    \item \textbf{Phân phối Goroutines:} Scheduler phân phối các goroutines từ hàng đợi chung đến các OS threads để thực thi.
+    \item \textbf{Chuyển đổi ngữ cảnh (Context Switching):} Scheduler có thể chuyển đổi ngữ cảnh giữa các goroutines một cách nhanh chóng và hiệu quả.
+    \item \textbf{Điều chỉnh số lượng threads:} Scheduler có thể tự động điều chỉnh số lượng threads hệ điều hành (tối đa bằng GOMAXPROCS) để tối ưu hóa hiệu suất.
+\end{enumerate} \\
+\textbf{Ưu điểm của mô hình M:N:}
+ \begin{itemize}
+     \item \textbf{Khả năng mở rộng cao:} Có thể xử lý một số lượng lớn goroutines trên một số lượng nhỏ threads hệ điều hành.
+     \item \textbf{Hiệu quả:}  Giảm thiểu chi phí chuyển đổi ngữ cảnh giữa các goroutines.
+     \item \textbf{Đơn giản hóa lập trình đồng thời:} Giúp việc viết code đồng thời trở nên dễ dàng và an toàn hơn.
+ \end{itemize}\\
+ Trong hệ thống này, goroutines được sử dụng để xử lý đồng thời các request từ người dùng và các luồng dữ liệu từ các cảm biến. Go runtime scheduler đảm bảo rằng các goroutines này được thực thi một cách hiệu quả, tận dụng tối đa tài nguyên của hệ thống.
+    \newpage
+
+    \section{Service thu thập dữ liệu}
+    Service thu thập dữ liệu là thành phần cốt lõi trong hệ thống giao thông thông minh, đảm nhận việc tiếp nhận và xử lý liên tục luồng dữ liệu từ các thiết bị IoT, cảm biến và người dùng. Dữ liệu này được xử lý, xác thực và lưu trữ vào cơ sở dữ liệu PostgreSQL/PostGIS để phục vụ cho các phân tích thống kê và ứng dụng giao thông thông minh khác.
+    
+    \begin{figure}[h]
+				\centering
+				\includegraphics[width=14cm]{images/hinh6.png}
+				\caption{Kiến trúc tổng quan của service}
+    \end{figure}
+    
+   \noindent \textbf{Từ client đến server} 
+    
+    Phần mềm giả lập sẽ tạo ra mock data về thông tin object, với mỗi bản ghi, tạo một goroutine để gửi data tới server trên một channel truyền dữ liệu chung, tuy nhiên phải có một cơ chế để giới hạn số lượng goroutine đồng thời. Điều này sẽ giúp request được gửi đồng thời, không bị blocking, không vượt quá tài nguyên hệ thống.\\
+
+    \noindent \textbf{Proto code cho objects:}
+    \begin{lstlisting}[language=proto]
+    message ObjectRequest {
+        int32 id = 1;
+        string type = 2;
+        string color = 3;
+        float lat = 4;
+        float lng = 5;
+        string status = 6;
+        int64 timestamp = 7;
+    }
+    message ObjectResponse {
+        int32 ack = 1;
+    }
+    service Object {
+        rpc CreateObject( ObjectRequest) returns ( ObjectResponse);
+    }
+    \end{lstlisting}
+    
+    \noindent \textbf{Xử lý request ở server} 
+    
+    Với mỗi request được gửi tới, server sẽ tạo một goroutine để xử lý request đó mà không block luồng xử lý chính. Như vậy main goroutine đóng vai trò như một webserver nhận request và gửi nó tới các worker goroutine để xử lý request đó.  
+
+    Về xử lý dữ liệu, ta cần loại bỏ dữ liệu thừa (nhiễu) tuy nhiên vẫn phải đảm bảo lưu đầy đủ thông tin có gía trị cho việc thống kê sau này. Để giải quyết vấn đề này, với mỗi giây nếu có nhiều bản ghi của cùng một object\_id được gửi tới, ta sẽ chỉ lưu 1 bản ghi cuối cùng và loại bỏ những bản ghi trước đó.
+    
+    Ở đây, ta sẽ duy trì một map như một bộ nhớ cache tạm thời với key là timestamp tính theo giây, value là một map sẽ ánh xạ mỗi object\_id với bản ghi cuối cùng được gửi tới. Mỗi request gửi tới sẽ cập nhật hoặc thêm dữ liệu vào map, đồng thời sẽ phải có các goroutine đóng vai trò như worker truyền dữ liệu từ server tới database.
+
+    Việc đọc và ghi đồng thời liên tục dữ liệu trong cache sẽ gây ra vấn đề nhất quán dữ liệu, ví dụ như worker có thể gửi dữ liệu cũ tới database trong khi dữ liệu đó đang được cập nhật trên cache. Ta có nhận xét như sau: Với mỗi giây, cần lưu ít nhất một bản ghi của một object\_id nếu có, và dữ liệu trong quá khứ sẽ không thay đổi, khi đó ta sẽ thấy với các key đã lưu trong cache hơn 1 giây, dữ liệu trong key sẽ không thay đổi nữa. Chính vì vậy ta sẽ lên lịch worker truyền đồng thời giải phóng dữ liệu của các key đó. \\
+
+   \noindent \textbf{Từ server tới database} 
+    
+    Về vấn đề lưu dữ liệu tới database, với mỗi timestamp key, ta sẽ gửi toàn bộ bản ghi ứng với key đó trong một transaction tới database để thực hiện bulk insert. Điều này sẽ giúp giảm round-trip time (RTT) cũng như overhead của việc thiết lập kết nối.
+
+         \begin{figure}[h]
+				\centering
+				\includegraphics[width=16cm]{images/hinh8.png}
+				\caption{Sơ đồ hoạt động của cache}
+    \end{figure}
+    \newpage
+	\section{Service truy vấn thống kê}
+    Service truy vấn thống kê cho phép người dùng truy vấn số lượng đối tượng có mặt trong một khu vực và khoảng thời gian cụ thể thông qua giao diện web. Dữ liệu  được lưu trữ trong cơ sở dữ liệu PostgreSQL/PostGIS, và một hàm UDF (User-Defined Function) được sử dụng để thực hiện truy vấn không gian và thời gian hiệu quả.\\
+    
+    \begin{figure}[h]
+				\centering
+				\includegraphics[width=14cm]{images/hinh7.png}
+				\caption{Tổng quan kiến trúc}
+    \end{figure}
+    
+   \noindent \textbf{Luồng hoạt động như sau:}
+    \begin{enumerate}
+        \item Người dùng vẽ vùng địa lý trên bản đồ và chọn khoảng thời gian, có thể thêm các bộ lọc (loại, màu sắc, trạng thái).
+        \item React gửi request đến Golang API với các thông số: WKT (Well-Known Text) của polygon, thời gian bắt đầu và kết thúc, các bộ lọc (nếu có).
+        \item API nhận request, sau đó gọi UDF trong Postgresql, hàm UDF truy vấn cơ sở dữ liệu để đếm số lượng đối tượng thỏa mãn điều kiện.
+        \item API nhận kết quả từ truy vấn, gửi kết quả dạng JSON cho frontend để hiển thị kết quả cho người dùng.
+    \end{enumerate}
+
+   \noindent \textbf{Lợi ích của việc sử dụng UDF:}
+    \begin{itemize}
+        \item Tái sử dụng code: UDF đóng gói logic truy vấn phức tạp vào một hàm duy nhất. Sau đó, ta có thể gọi hàm này từ nhiều nơi khác nhau trong ứng dụng, tránh việc lặp lại code và giúp code dễ bảo trì hơn.
+        \item Cải thiện hiệu suất: PostgreSQL có thể tối ưu hóa việc thực thi UDF bằng cách biên dịch trước (pre-compile) và lưu trữ kế hoạch truy vấn (query plan). Điều này giúp giảm thiểu thời gian thực thi truy vấn, đặc biệt là khi truy vấn được gọi nhiều lần.
+        \item Tối ưu hóa cho truy vấn không gian (PostGIS): UDF PostGIS giúp đóng gói logic truy vấn không gian phức tạp, tận dụng các hàm và toán tử không gian của PostGIS để thực hiện các phép tính và lọc dữ liệu hiệu quả hơn. 
+    \end{itemize}
+    \newpage
+   \noindent \textbf{User-Defined Function (UDF) trong PostgreSQL} \\
+    \begin{lstlisting}[language=sql]
+    DECLARE
+        geom geometry;
+    BEGIN
+        geom := ST_GeomFromText(polygon_wkt, 4326);
+        
+    RETURN (
+        SELECT COUNT(DISTINCT object_id) FROM objects
+        WHERE created_at >= start_time 
+          AND created_at < end_time
+          AND ST_Contains(geom, location)
+          AND (object_type = object_type OR object_type IS NULL)  
+          AND (object_color = object_color OR object_color IS NULL)
+          AND (object_status = object_status OR object_status IS NULL)
+    );
+    END;
+    \end{lstlisting}
+    
+    \newpage
+	\section{Cơ sở dữ liệu}
+	Từ những phân tích về cơ sở dữ liệu ở chương trước, hệ thống quyết định sử dụng     Postgresql cho việc lưu trữ và truy vấn dữ liệu.
+        \begin{itemize}
+            \item Postgres là cơ sở dữ liệu có hiệu năng cao, xử lý lên tới 20k transaction/s.
+            \item Đối với dạng dữ liệu địa lý, Postgres có hỗ trợ PostGIS extension giúp việc truy vấn không gian địa lý dễ dàng, hiệu quả.
+            \item Đối với dạng dữ liệu thời gian, Postgres cung cấp block range indexes (BRIN) có hiệu suất cao với truy vấn dạng time-range, đồng thời sử dụng ít không gian lưu trữ hơn rất nhiều so với B-Tree index.
+        \end{itemize} \\
+        
+        \noindent Để phục vụ tốc độ truy vấn thống kê với số lượng bản ghi lớn và không giới hạn theo thời gian, ta xem xét thực hiện các việc sau:
+        \begin{itemize}
+            \item Indexing cho 2 column chính là timestamp (brin index) và location (R-Tree).
+            \item Partition dữ liệu khi số lượng data quá lớn, độ trễ truy vấn vượt quá ngưỡng cho phép.
+            \item Xóa bớt dữ liệu kém giá trị như dữ liệu quá cũ, tùy thuộc vào nghiệp vụ của bài toán.
+            \item Thực hiện pre-computed cho những truy vấn thường xuyên được thực hiện hoặc truy vấn mất nhiều thời gian như số lượng xe ở các thành phố lớn tại giờ cao điểm.
+        \end{itemize} 
+	\newpage
+	\chapter{TRIỂN KHAI VÀ ĐÁNH GIÁ KÊT QUẢ}
+ \section{Môi trường triển khai}
+        Hệ thống triển khai trên máy tính cá nhân với cấu hình như sau:
+        \begin{itemize}
+            \item \textbf{CPU:} 4 cores, 8 threads
+            \item \textbf{RAM:} 16GB
+            \item \textbf{Lưu trữ:} SSD 512GB
+            \item \textbf{Hệ điều hành:} Windows 11
+            \item \textbf{Cơ sở dữ liệu:} PostgreSQL 16 với extension PostGIS 3.4
+        \end{itemize}
+    Yêu cầu phần mềm:
+    \begin{itemize}
+        \item Cài đặt Golang (báo cáo sử dụng version 1.20)
+        \item Cài đặt Postgresql Server cùng Postgis extension
+        \item Cài đặt Nodejs (báo cáo sử dụng version 20.10)
+    \end{itemize}
+    
+    \section{Kiểm thử hiệu năng}
+
+    Để đánh giá hiệu suất của hệ thống, ta thực hiện kiểm thử tải bằng gRPC stub để gửi request tới server. Đầu tiên tạo một hàm \textit{testCreateObject} thực hiện gửi 100.000 request tới server, trong đó giới hạn số lượng goroutine chạy đồng thời, ở báo cáo là 8000. Ta chạy kiểm thử hiệu năng trong 10 phút, với chu kỳ gọi hàm là 3 giây một lần, sau mỗi lần ghi lại latency trung bình cùng số lượng RPS.
+    \newpage
+    
+    \textbf{Kết quả kiểm thử:}
+    \begin{figure}[h]
+				\centering
+				\includegraphics[width=14cm]{images/hinh14.jpg}
+				\caption{Biểu đồ thể hiện độ trễ trung bình}
+    \end{figure}
+
+    \begin{figure}[h]
+				\centering
+				\includegraphics[width=14cm]{images/hinh15.jpg}
+				\caption{Biểu đồ thể hiện Requests per second}
+    \end{figure}
+
+    \textbf{Nhận xét:}
+    \begin{itemize}
+        \item Latency dao động xung quanh 0.04ms, cao nhất 0.18ms khi khởi động, thấp nhất 0.02ms.
+        \item RPS dao động xung quanh 25.000 đến 30.000 req/s, cao nhất là 40.000 req/s, thấp nhất là 5.000 req/s lúc khởi động.
+    \end{itemize}
+        
+        \newpage
+	\section{Tối ưu hóa và cải tiến}
+	Dựa trên kết quả kiểm thử, ta thực hiện một số tối ưu hóa để cải thiện hiệu suất của hệ thống:
+\begin{itemize}
+    \item \textbf{Batching:} Gộp nhiều đối tượng vào một batch trước khi gửi đến cơ sở dữ liệu để giảm số lượng truy vấn.
+    \item \textbf{Connection Pooling:} Sử dụng connection pooling để tái sử dụng các kết nối đến cơ sở dữ liệu, giảm thiểu thời gian thiết lập kết nối mới.
+    \item \textbf{Tối ưu hóa truy vấn:} Sử dụng các chỉ mục (index) phù hợp trong PostgreSQL/PostGIS để tăng tốc độ truy vấn.
+\end{itemize}
+
+\chapter*{MỞ RỘNG}
+Để triển khai hệ thống lên môi trường production, ta
+
+sao lưu dữ liệu 
+
+
+	\chapter{KẾT LUẬN}
+	
+	\bibliographystyle{ieeetr}
+	\bibliography{references.bib}
+	
+\end{document}
+

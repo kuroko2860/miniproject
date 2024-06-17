@@ -1,0 +1,43 @@
+.appContainer {
+  display: flex; /* Arrange sidebar and map side-by-side */
+  height: 100vh; /* Make the container take full viewport height */
+  width: 100%;
+}
+
+.sidebar {
+  width: 300px; /* Adjust sidebar width as needed */
+  padding: 20px;
+  background-color: #f0f0f0;
+  border-right: 1px solid #ddd;
+}
+
+.inputGroup {
+  margin-bottom: 10px;
+}
+
+.inputGroup label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.inputGroup input,
+.inputGroup select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.button {
+  background-color: #007bff; /* Blue background */
+  color: white; /* White text */
+  padding: 10px 15px; /* Some padding */
+  border: none; /* No border */
+  cursor: pointer; /* Mouse pointer on hover */
+  border-radius: 5px; /* Rounded corners */
+}
+
+.result {
+  margin-top: 20px;
+  font-weight: bold;
+}
