@@ -65,7 +65,7 @@ func sendToPostGIS(objMap *sync.Map) error {
 	objMap.Range(func(_, value any) bool {
 		obj := value.(*object.ObjectRequest)
 
-		if _, err = stmt.Exec(obj.Id, obj.Type, obj.Color, obj.Lat, obj.Lng, obj.Status, time.Unix(obj.Timestamp, 0)); err != nil {
+		if _, err = stmt.Exec(obj.Id, obj.Type, obj.Color, obj.Lng, obj.Lat, obj.Status, time.Unix(obj.Timestamp, 0)); err != nil {
 			log.Fatal(err)
 		}
 

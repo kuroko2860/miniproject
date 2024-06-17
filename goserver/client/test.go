@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"math/rand"
 	"os"
 
 	// "runtime/pprof"
@@ -16,10 +17,11 @@ import (
 )
 
 var (
-	conn   *grpc.ClientConn
-	err    error
-	wg     sync.WaitGroup
-	client pb.ObjectClient
+	conn             *grpc.ClientConn
+	err              error
+	wg               sync.WaitGroup
+	client           pb.ObjectClient
+	predefinedPoints []Object
 )
 
 func testHello() {
@@ -69,16 +71,16 @@ func testCreateObject() {
 	l_statuses := len(statuses)
 
 	var numRequests int32 = 100000
-	var concurrency int32 = 50000 // Adjust this based on your needs
+	var concurrency int32 = 8000 // Adjust this based on your needs
 	// Vietnam's approximate bounding box (latitude and longitude)
-	minLat := float32(8.5)
+	// minLat := float32(8.5)
 	// maxLat := float32(15.3)
-	minLng := float32(102.1)
+	// minLng := float32(102.1)
 	// maxLng := float32(109.5)
 
 	// Starting coordinates
-	lat := minLat
-	lng := minLng
+	// lat := minLat
+	// lng := minLng
 
 	startTime := time.Now()
 	type_idx := 0
@@ -87,27 +89,28 @@ func testCreateObject() {
 	var i int32
 	for i = 1; i <= numRequests; i++ {
 		wg.Add(1)
-		go func() {
+		go func(j int32) {
 			defer wg.Done()
+			obj := predefinedPoints[j%8000]
 			objectReq := &pb.ObjectRequest{
-				Id:        i%concurrency + 1,
+				Id:        obj.Id,
 				Type:      types[type_idx],
 				Color:     colors[color_idx],
-				Lat:       lat,
-				Lng:       lng,
+				Lat:       obj.Lat,
+				Lng:       obj.Lng,
 				Status:    statuses[status_idx],
 				Timestamp: time.Now().Unix(),
 			}
 			// log.Println("id", objectReq.Id, " time:", objectReq.Timestamp)
 
 			// Increment lat/lng slightly for each object
-			lat = lat + 0.01*float32(i%10)
-			lng = lng + 0.01*float32(i%10)
+			obj.Lng = obj.Lng + obj.DirX
+			obj.Lat = obj.Lat + obj.DirY
 			_, err := client.CreateObject(context.Background(), objectReq)
 			if err != nil {
 				log.Printf("Could not create object: %v", err)
 			}
-		}()
+		}(i)
 		if i%concurrency == 0 {
 			type_idx = (type_idx + 1) % l_types
 			color_idx = (color_idx + 1) % l_colors
@@ -138,8 +141,9 @@ func openLogFile(path string) (*os.File, error) {
 }
 
 type Object struct {
-	Lat  float32
-	Lng  float32
+	Id   int32
+	Lng  float32 // kinh do
+	Lat  float32 // vi do
 	DirX float32
 	DirY float32
 }
@@ -159,12 +163,12 @@ func main() {
 	// }
 
 	// defer pprof.StopCPUProfile()
-	// file, err := openLogFile("./mylog.log")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// log.SetOutput(file)
-	// log.SetFlags(log.LstdFlags | log.Lshortfile | log.Lmicroseconds)
+	file, err := openLogFile("./mylog.log")
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.SetOutput(file)
+	log.SetFlags(log.LstdFlags | log.Lshortfile | log.Lmicroseconds)
 
 	// gRPC connection
 	conn, err = grpc.NewClient("localhost:8089", grpc.WithTransportCredentials(insecure.NewCredentials()))
@@ -175,14 +179,17 @@ func main() {
 	client = pb.NewObjectClient(conn)
 
 	// Create mock data
-	var predefinedPoints = map[int32]Object{}
-	for i := 1; i <= 100000; i++ {
-		predefinedPoints[int32(i)] = Object{
-			Lat:  10.0,
-			Lng:  10.0,
-			DirX: 0.01,
-			DirY: 0.01,
+	predefinedPoints = make([]Object, 8000)
+	for i := 1; i <= 8000; i++ {
+		obj := Object{
+			Id:   int32(i),
+			Lng:  rand.Float32()*(109.5-102.1) + 102.1,
+			Lat:  rand.Float32()*(15.3-8.5) + 8.5,
+			DirX: (rand.Float32()*(0.9-0.1) + 0.1) * 0.01,
+			DirY: (rand.Float32()*(0.9-0.1) + 0.1) * 0.01,
 		}
+		predefinedPoints[i-1] = obj
+		// log.Println(obj)
 	}
 
 	// Running test
@@ -197,6 +204,7 @@ func main() {
 			return
 		case <-ticker:
 			testCreateObject()
+			// os.Exit(0)
 			// testHello()
 		}
 	}
