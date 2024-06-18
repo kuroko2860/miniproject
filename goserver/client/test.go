@@ -61,51 +61,40 @@ func testHello() {
 }
 
 func testCreateObject() {
-	types := []string{"car", "bike", "truck", "bus"}
-	l_types := len(types)
-	colors := []string{"red", "green", "blue", "yellow"}
-	l_colors := len(colors)
-	statuses := []string{"moving", "static"}
-	l_statuses := len(statuses)
 
-	var numRequests int32 = 100000
-	var concurrency int32 = 8000 // Adjust this based on your needs
+	var numRequests int32 = 200000
+	var concurrency int32 = 1000 // Adjust this based on your needs
 
 	startTime := time.Now()
-	type_idx := 0
-	color_idx := 0
-	status_idx := 0
+
 	var i int32
-	for i = 1; i <= numRequests; i++ {
-		wg.Add(1)
+	wg.Add(int(concurrency))
+	for i = 1; i <= concurrency; i++ {
 		go func(j int32) {
 			defer wg.Done()
-			obj := predefinedPoints[j%8000]
-			objectReq := &pb.ObjectRequest{
-				Id:        obj.Id,
-				Type:      types[type_idx],
-				Color:     colors[color_idx],
-				Lat:       obj.Lat,
-				Lng:       obj.Lng,
-				Status:    statuses[status_idx],
-				Timestamp: time.Now().Unix(),
-			}
-			// log.Println("id", objectReq.Id, " time:", objectReq.Timestamp)
+			obj_id := rand.Int31n(100000) + 1
+			obj := predefinedPoints[obj_id-1]
+			for t := 0; t < int(numRequests/concurrency); t++ {
+				objectReq := &pb.ObjectRequest{
+					Id:        obj.Id,
+					Type:      obj.Type,
+					Color:     obj.Color,
+					Lat:       obj.Lat,
+					Lng:       obj.Lng,
+					Status:    obj.Status,
+					Timestamp: time.Now().Unix(),
+				}
+				// log.Println("id", objectReq.Id, " time:", objectReq.Timestamp)
 
-			// Increment lat/lng slightly for each object
-			obj.Lng = obj.Lng + obj.DirX
-			obj.Lat = obj.Lat + obj.DirY
-			_, err := client.CreateObject(context.Background(), objectReq)
-			if err != nil {
-				log.Printf("Could not create object: %v", err)
+				// Increment lat/lng slightly for each object
+				obj.Lng = obj.Lng + obj.DirX
+				obj.Lat = obj.Lat + obj.DirY
+				_, err := client.CreateObject(context.Background(), objectReq)
+				if err != nil {
+					log.Printf("Could not create object: %v\n", err)
+				}
 			}
 		}(i)
-		if i%concurrency == 0 {
-			type_idx = (type_idx + 1) % l_types
-			color_idx = (color_idx + 1) % l_colors
-			status_idx = (status_idx + 1) % l_statuses
-			wg.Wait() // Wait for a batch of goroutines to finish
-		}
 	}
 	wg.Wait() // Wait for all remaining goroutines
 
@@ -130,14 +119,24 @@ func openLogFile(path string) (*os.File, error) {
 }
 
 type Object struct {
-	Id   int32
-	Lng  float32 // kinh do
-	Lat  float32 // vi do
-	DirX float32
-	DirY float32
+	Id     int32
+	Lng    float32 // kinh do
+	Lat    float32 // vi do
+	Type   string
+	Color  string
+	Status string
+	DirX   float32
+	DirY   float32
 }
 
 func main() {
+	types := []string{"car", "bike", "truck", "bus"}
+	l_types := len(types)
+	colors := []string{"red", "green", "blue", "yellow"}
+	l_colors := len(colors)
+	// statuses := []string{"moving", "static"}
+	// l_statuses := len(statuses)
+
 	// f, err := os.Create("cpu_profile.prof")
 
 	// if err != nil {
@@ -166,21 +165,26 @@ func main() {
 	}
 	defer conn.Close()
 	client = pb.NewObjectClient(conn)
-
+	fmt.Println("Creating mock data...")
 	// Create mock data
-	predefinedPoints = make([]Object, 8000)
-	for i := 1; i <= 8000; i++ {
+	predefinedPoints = make([]Object, 100000)
+	for i := 1; i <= 100000; i++ {
 		obj := Object{
-			Id:   int32(i),
-			Lng:  rand.Float32()*(109.5-102.1) + 102.1,
-			Lat:  rand.Float32()*(15.3-8.5) + 8.5,
-			DirX: (rand.Float32()*(0.9-0.1) + 0.1) * 0.01,
-			DirY: (rand.Float32()*(0.9-0.1) + 0.1) * 0.01,
+			Id:     int32(i),
+			Type:   types[rand.Intn(l_types)],
+			Color:  colors[rand.Intn(l_colors)],
+			Status: "moving",
+			Lng:    rand.Float32()*(109.5-102.1) + 102.1,
+			Lat:    rand.Float32()*(23.3-8.5) + 8.5,
+			DirX:   (rand.Float32()*(0.9-0.1) + 0.1) * 0.001,
+			DirY:   (rand.Float32()*(0.9-0.1) + 0.1) * 0.001,
 		}
 		predefinedPoints[i-1] = obj
 		// log.Println(obj)
 	}
 
+	fmt.Println("Created 100.000 mock object...")
+	fmt.Println("Running test...")
 	// Running test
 	durationInMinutes := 10
 	timeout := time.After(time.Duration(durationInMinutes) * time.Minute) // Create a channel that will receive a value after 10 minutes
@@ -189,7 +193,7 @@ func main() {
 	for {
 		select {
 		case <-timeout:
-			fmt.Printf("%d minutes have passed. Exiting loop.", durationInMinutes)
+			fmt.Printf("%d minutes have passed. Done testing.", durationInMinutes)
 			return
 		case <-ticker:
 			testCreateObject()
