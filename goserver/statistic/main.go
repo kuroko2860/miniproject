@@ -30,6 +30,8 @@ func countObjectsHandler(w http.ResponseWriter, r *http.Request) {
 	end := r.URL.Query().Get("end")
 	polygonWKT := r.URL.Query().Get("polygon")
 
+	// fmt.Println(start, end, polygonWKT)
+
 	// Get optional filter parameters (type, color, status)
 	objectType := r.URL.Query().Get("type")
 	objectColor := r.URL.Query().Get("color")

@@ -9,9 +9,9 @@ function App() {
   const [objectCount, setObjectCount] = useState(null);
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
-  const [typeFilter, setTypeFilter] = useState("");
-  const [colorFilter, setColorFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [colorFilter, setColorFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [mapLayers, setMapLayers] = useState([]);
 
   const handleStartTimeChange = (event) => setStartTime(event.target.value);
@@ -61,7 +61,7 @@ function App() {
     try {
       const _polygon = [...mapLayers[0].latlngs, mapLayers[0].latlngs[0]]; // Close the polygon
       const polygonWKT = `POLYGON((${_polygon
-        .map((point) => [point.lat, point.lng].join(" "))
+        .map((point) => [point.lng, point.lat].join(" "))
         .join(", ")}))`;
 
       const response = await fetch(
@@ -106,22 +106,38 @@ function App() {
 
         <div className={styles.inputGroup}>
           <label htmlFor="type">Type:</label>
-          <select id="type" value={typeFilter} onChange={handleTypeChange}>
-            <option value="">All</option>
+          <select
+            id="type"
+            value={typeFilter}
+            onChange={handleTypeChange}
+            defaultValue={"all"}
+          >
+            <option value="all" defaultValue={true}>
+              All
+            </option>
             <option value="car">Car</option>
             <option value="truck">Truck</option>
             <option value="bike">Bike</option>
+            <option value="bus">Bus</option>
           </select>
         </div>
 
         <div className={styles.inputGroup}>
           <label htmlFor="color">Color:</label>
-          <input
-            type="text"
+          <select
             id="color"
             value={colorFilter}
             onChange={handleColorChange}
-          />
+            defaultValue={"all"}
+          >
+            <option value="all" defaultValue={true}>
+              All
+            </option>
+            <option value="red">Red</option>
+            <option value="green">Green</option>
+            <option value="blue">Blue</option>
+            <option value="yellow">Yellow</option>
+          </select>
         </div>
 
         <div className={styles.inputGroup}>
@@ -129,9 +145,12 @@ function App() {
           <select
             id="status"
             value={statusFilter}
+            defaultValue={"all"}
             onChange={handleStatusChange}
           >
-            <option value="">All</option>
+            <option value="all" defaultValue={true}>
+              All
+            </option>
             <option value="moving">Moving</option>
             <option value="static">Static</option>
           </select>

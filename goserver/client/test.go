@@ -7,7 +7,6 @@ import (
 	"math/rand"
 	"os"
 
-	// "runtime/pprof"
 	"sync"
 	"time"
 
@@ -18,7 +17,6 @@ import (
 
 var (
 	conn             *grpc.ClientConn
-	err              error
 	wg               sync.WaitGroup
 	client           pb.ObjectClient
 	predefinedPoints []Object
@@ -72,15 +70,6 @@ func testCreateObject() {
 
 	var numRequests int32 = 100000
 	var concurrency int32 = 8000 // Adjust this based on your needs
-	// Vietnam's approximate bounding box (latitude and longitude)
-	// minLat := float32(8.5)
-	// maxLat := float32(15.3)
-	// minLng := float32(102.1)
-	// maxLng := float32(109.5)
-
-	// Starting coordinates
-	// lat := minLat
-	// lng := minLng
 
 	startTime := time.Now()
 	type_idx := 0

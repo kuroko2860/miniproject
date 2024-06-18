@@ -14,7 +14,6 @@ services:
       - ./postgres/data:/var/lib/postgresql/data
       - .postgres/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
 
-  
   go-server:
     build:
       context: ./goserver

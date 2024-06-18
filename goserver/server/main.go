@@ -15,7 +15,7 @@ import (
 
 	_ "github.com/lib/pq"
 	"google.golang.org/grpc"
-	object "kuroko.com/goserver/object"
+	"kuroko.com/goserver/object"
 )
 
 var (
@@ -33,9 +33,10 @@ func (s myObjectServer) CreateObject(ctx context.Context, req *object.ObjectRequ
 	actual, _ := cache.LoadOrStore(key, &sync.Map{})
 	objMap := actual.(*sync.Map)
 	objMap.Store(req.Id, req)
+
 	// Schedule cleanup after 1 second to send to the database, not blocking the go routine
 	time.AfterFunc(1*time.Second, func() {
-		if objMap, ok := cache.LoadAndDelete(key); ok {
+		if objMap, ok := cache.LoadAndDelete(req.Timestamp); ok {
 			func() { // Process in a goroutine to avoid blocking the server
 				err := sendToPostGIS(objMap.(*sync.Map)) // Pass the whole list
 				if err != nil {
