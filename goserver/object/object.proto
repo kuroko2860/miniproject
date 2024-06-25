@@ -10,6 +10,7 @@ message ObjectRequest {
   float lng = 5;
   string status = 6;
   int64 timestamp = 7;
+  
 }
 
 message ObjectResponse {
